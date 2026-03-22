@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cielorraso Desmontable · SECORED</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0f0f11;
+    --surface: #18181c;
+    --surface2:#222228;
+    --border:  #2e2e38;
+    --accent:  #e8ff47;
+    --accent2: #47d4ff;
+    --text:    #f0f0f5;
+    --muted:   #7a7a8c;
+    --danger:  #ff6b6b;
+    --success: #47ffb0;
+    --radius:  10px;
+    --mono:    'DM Mono', monospace;
+    --sans:    'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 40px 16px 80px;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header { margin-bottom: 40px; }
+  .header .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .header h1 { font-size: clamp(28px,5vw,42px); font-weight: 800; line-height: 1.1; }
+  .header h1 span { color: var(--accent); }
+  .header p { margin-top: 10px; color: var(--muted); font-size: 14px; }
+
+  /* SECTIONS */
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; margin-bottom: 16px; transition: opacity 0.25s, border-color 0.2s; }
+  .section.active { border-color: var(--accent); }
+  .section.locked { opacity: 0.35; pointer-events: none; }
+  .section-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; }
+  .step-num { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--accent); white-space: nowrap; text-transform: uppercase; }
+  .section h2 { font-size: 16px; font-weight: 700; }
+
+  /* SINGLE INPUT */
+  .medidas-field label { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .medidas-field input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: var(--mono); font-size: 32px; font-weight: 500;
+    padding: 16px 20px; outline: none; letter-spacing: 0.04em;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .medidas-field input::placeholder { color: var(--muted); opacity: 0.45; }
+  .medidas-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,255,71,0.12); }
+  .medidas-field input.err { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(255,107,107,0.12); }
+  .medidas-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.7; }
+  .medidas-hint b { color: var(--text); }
+
+  .area-pill { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--muted); background: var(--surface2); border: 1px dashed var(--border); border-radius: 6px; padding: 9px 14px; margin-top: 12px; min-height: 38px; }
+  .area-pill b { color: var(--accent); }
+
+  /* OPTIONS */
+  .opt-grid { display: grid; gap: 10px; }
+  .opt-grid.cols2 { grid-template-columns: 1fr 1fr; }
+  .opt { position: relative; cursor: pointer; }
+  .opt input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .opt-label { display: flex; align-items: flex-start; gap: 12px; padding: 15px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .opt-label:hover { border-color: rgba(232,255,71,0.4); }
+  .opt input:checked + .opt-label { border-color: var(--accent); background: rgba(232,255,71,0.08); box-shadow: 0 0 0 2px rgba(232,255,71,0.15); }
+  .opt-radio { width: 14px; height: 14px; border: 1.5px solid var(--muted); border-radius: 50%; flex-shrink: 0; margin-top: 3px; position: relative; transition: border-color 0.15s; }
+  .opt input:checked + .opt-label .opt-radio { border-color: var(--accent); }
+  .opt input:checked + .opt-label .opt-radio::after { content: ''; position: absolute; inset: 3px; background: var(--accent); border-radius: 50%; }
+  .opt-text strong { display: block; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .opt-text small { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  /* BAJADA */
+  .bajada-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .bajada-row input { width: 100px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 24px; font-weight: 500; padding: 12px 14px; outline: none; -moz-appearance: textfield; transition: border-color 0.2s; }
+  .bajada-row input::-webkit-outer-spin-button, .bajada-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .bajada-row input:focus { border-color: var(--accent); }
+  .bajada-row span { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .bajada-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  .iso-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* CTA */
+  .btn-calc { width: 100%; margin-top: 8px; background: var(--accent); color: #0f0f11; border: none; border-radius: 8px; padding: 17px; font-family: var(--sans); font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+  .btn-calc:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-calc:active { transform: translateY(0); }
+
+  .err-msg { font-family: var(--mono); font-size: 11px; color: var(--danger); margin-top: 8px; display: none; }
+
+  /* RESULTS */
+  #results { display: none; animation: fadeUp 0.35s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .results-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+  .results-top { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 16px 22px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .results-top h2 { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  .results-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 1.9; text-align: right; }
+
+  .mat-table { width: 100%; border-collapse: collapse; }
+  .mat-table tr { border-bottom: 1px solid var(--border); animation: rowIn 0.25s ease both; }
+  .mat-table tr:last-child { border-bottom: none; }
+  @keyframes rowIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+  .mat-table td { padding: 13px 22px; vertical-align: middle; }
+  .mat-table td:last-child { text-align: right; white-space: nowrap; }
+  .mat-code { font-family: var(--mono); font-size: 10px; color: var(--accent2); letter-spacing: 0.1em; margin-bottom: 3px; }
+  .mat-name { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text); }
+  .mat-qty  { font-family: var(--mono); font-size: 26px; font-weight: 500; color: var(--accent); }
+  .mat-unit { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .mat-table tr.iso-row-result { background: rgba(71,255,176,0.05); }
+  .mat-table tr.iso-row-result .mat-code { color: var(--success); }
+  .mat-table tr.iso-row-result .mat-qty  { color: var(--success); }
+
+  .results-footer { padding: 11px 22px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 2; }
+
+  .iso-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; margin-bottom: 16px; }
+  .iso-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .iso-card p { font-size: 12px; color: var(--muted); margin-bottom: 16px; font-family: var(--mono); line-height: 1.6; }
+  .iso-answer { margin-top: 14px; display: none; animation: fadeUp 0.25s ease both; }
+  .iso-none-msg { font-family: var(--mono); font-size: 12px; color: var(--muted); padding: 8px 0; }
+
+  .btn-reset { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 12px 22px; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .btn-reset:hover { border-color: var(--danger); color: var(--danger); }
+
+  @media (max-width: 480px) { .opt-grid.cols2, .iso-row { grid-template-columns: 1fr; } .results-meta { text-align: left; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="eyebrow">▸ SECORED · Sistema 3</div>
+    <h1>Cielorraso<br><span>Desmontable</span></h1>
+    <p>Calculadora de materiales — estructura Barbieri 15/16" con placas desmontables.</p>
+  </div>
+
+  <!-- PASO 1: campo único -->
+  <div class="section active" id="s-medidas">
+    <div class="section-head">
+      <span class="step-num">PASO 01</span>
+      <h2>Medidas del techo</h2>
+    </div>
+    <div class="medidas-field">
+      <label>Largo × Ancho (metros)</label>
+      <input type="text" id="medInput" placeholder="9x5" autocomplete="off"
+             oninput="parseMedidas()" onkeydown="if(event.key==='Enter')parseMedidas(true)">
+      <p class="medidas-hint">Formatos aceptados: <b>9x5</b> &nbsp;·&nbsp; <b>9*5</b> &nbsp;·&nbsp; <b>9 5</b> &nbsp;·&nbsp; <b>9.5 x 4.2</b></p>
+    </div>
+    <div class="area-pill" id="area-pill">— ingresá las medidas</div>
+    <div class="err-msg" id="err-med">No se reconocen dos medidas válidas. Ejemplo: 9x5</div>
+  </div>
+
+  <!-- PASO 2 -->
+  <div class="section locked" id="s-tipo">
+    <div class="section-head"><span class="step-num">PASO 02</span><h2>Tipo de placa</h2></div>
+    <div class="opt-grid cols2">
+      <label class="opt"><input type="radio" name="tipo" value="liviana" onchange="onTipo()">
+        <span class="opt-label"><span class="opt-radio"></span><span class="opt-text"><strong>Placa Liviana</strong><small>Cosmos · térmica</small></span></span></label>
+      <label class="opt"><input type="radio" name="tipo" value="comun" onchange="onTipo()">
+        <span class="opt-label"><span class="opt-radio"></span><span class="opt-text"><strong>Placa Común</strong><small>Knauf Nebula · económica</small></span></span></label>
+    </div>
+  </div>
+
+  <!-- PASO 3 -->
+  <div class="section locked" id="s-medplaca">
+    <div class="section-head"><span class="step-num">PASO 03</span><h2>Medida de placa</h2></div>
+    <div class="opt-grid cols2">
+      <label class="opt"><input type="radio" name="medplaca" value="0.61x0.61" onchange="onMedPlaca()">
+        <span class="opt-label"><span class="opt-radio"></span><span class="opt-text"><strong>0.61 × 0.61</strong><small>cuadrada</small></span></span></label>
+      <label class="opt"><input type="radio" name="medplaca" value="1.22x0.61" onchange="onMedPlaca()">
+        <span class="opt-label"><span class="opt-radio"></span><span class="opt-text"><strong>1.22 × 0.61</strong><small>rectangular</small></span></span></label>
+    </div>
+  </div>
+
+  <!-- PASO 4 -->
+  <div class="section locked" id="s-bajada">
+    <div class="section-head"><span class="step-num">PASO 04</span><h2>Bajada del cielorraso</h2></div>
+    <div class="bajada-row">
+      <input type="number" id="bajada" value="15" min="1" step="1">
+      <span>cm</span>
+    </div>
+    <p class="bajada-hint">Default: 15 cm · modificá si necesitás bajar más.</p>
+    <div class="err-msg" id="err-bajada">La bajada debe ser mayor a 0.</div>
+    <button class="btn-calc" onclick="calcular()">CALCULAR MATERIALES</button>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="results">
+    <div class="results-card">
+      <div class="results-top">
+        <h2>Lista de materiales</h2>
+        <div class="results-meta" id="res-meta"></div>
+      </div>
+      <table class="mat-table" id="mat-table"></table>
+      <div class="results-footer">· Tornillos → múltiplo de 50 superior &nbsp;·&nbsp; Largueros con reutilización de cortes al 100% &nbsp;·&nbsp; Alambre: 40 m/kg · factor 1.15</div>
+    </div>
+    <div class="iso-card">
+      <h3>¿Agregás aislación térmica?</h3>
+      <p>Lana de vidrio Knauf Earthwool 39 ALU con barrera de vapor.<br>Se elige el espesor de menor desperdicio automáticamente.</p>
+      <div class="iso-row">
+        <label class="opt"><input type="radio" name="iso" value="si" onchange="calcIso(true)">
+          <span class="opt-label"><span class="opt-radio"></span><span class="opt-text"><strong>Sí, agregar</strong></span></span></label>
+        <label class="opt"><input type="radio" name="iso" value="no" onchange="calcIso(false)">
+          <span class="opt-label"><span class="opt-radio"></span><span class="opt-text"><strong>No, gracias</strong></span></span></label>
+      </div>
+      <div class="iso-answer" id="iso-answer"></div>
+    </div>
+    <button class="btn-reset" onclick="resetAll()">↺ Nuevo cálculo</button>
+  </div>
+
+</div>
+<script>
+const roundUp     = x => Math.ceil(x);
+const roundDown   = x => Math.floor(x);
+const roundMult50 = x => Math.ceil(x / 50) * 50;
+
+function calcPerimetral(largo, ancho) { return roundUp(2*(largo+ancho)/3.05); }
+
+function calcLarguero(largo, ancho, tipo) {
+  const p1 = tipo==='liviana' ? roundDown(largo/1.22) : roundDown(largo/0.61);
+  return roundUp((p1*ancho)/3.66);
+}
+
+function calcTravesanos(largo, ancho, tipo, medida) {
+  let r = {'1276':0,'1277':0};
+  if (tipo==='liviana' && medida==='0.61x0.61') {
+    r['1276'] = roundUp(roundDown(largo/1.22)*(ancho/0.61));
+    r['1277'] = roundUp(roundDown(ancho/0.61)*(largo/1.22));
+  } else if (tipo==='liviana' && medida==='1.22x0.61') {
+    r['1277'] = roundUp(roundDown(ancho/0.61)*(largo/1.22));
+  } else if (tipo==='comun' && medida==='0.61x0.61') {
+    r['1276'] = roundUp(roundDown(ancho/0.61)*(largo/0.61));
+  } else {
+    r['1276'] = roundUp(roundDown(ancho/1.22)*(largo/0.61));
+  }
+  return r;
+}
+
+function calcTornillosYTarugos(largo, ancho, perCount) {
+  const t = roundMult50(roundUp((largo/1.22)*ancho/1.22) + 4*perCount);
+  return {tornillos:t, tarugos:t};
+}
+
+function calcPlacas(sup, tipo, medida) {
+  if (tipo==='liviana') {
+    if (medida==='0.61x0.61') return {cod:'802',nom:'PLACA COSMOS RECTO STD 0.61 × 0.61 × 20MM',     qty:roundUp(sup/(0.61*0.61))};
+    else                      return {cod:'803',nom:'PLACA COSMOS RECTO STD 1.22 × 0.61 × 20MM',     qty:roundUp(sup/(1.22*0.61))};
+  } else {
+    if (medida==='0.61x0.61') return {cod:'816',nom:'PLACA KNAUF NEBULA LISA 0.606 × 0.606 (8,5mm)', qty:roundUp(sup/(0.606*0.606))};
+    else                      return {cod:'817',nom:'PLACA KNAUF NEBULA LISA 1.215 × 0.605 (8,5mm)', qty:roundUp(sup/(1.215*0.605))};
+  }
+}
+
+function calcAlambre(largo, ancho, bajadaCm) {
+  const bajadaM = bajadaCm/100;
+  const puntos  = Math.max(1,roundDown(ancho/1.2)) * Math.max(1,roundDown(largo/1.2));
+  return {kg: roundUp(puntos*bajadaM*1.15/40), puntos};
+}
+
+function calcAislacion(sup) {
+  const r50={cod:'876602',nom:'LANA KNAUF Earthwool 39 ALU 50mm',m2:24.0,esp:'50 mm'};
+  const r70={cod:'876604',nom:'LANA KNAUF Earthwool 39 ALU 70mm',m2:14.4,esp:'70 mm'};
+  if (sup>29) return {...r50, qty:roundUp(sup/r50.m2), criterio:'Superficie > 29 m² → exclusivamente 50 mm'};
+  const q50=roundUp(sup/r50.m2), d50=q50*r50.m2-sup;
+  const q70=roundUp(sup/r70.m2), d70=q70*r70.m2-sup;
+  if (d50<=d70) return {...r50, qty:q50, criterio:`50 mm elegido (desp. ${d50.toFixed(2)} m²) vs 70 mm (${d70.toFixed(2)} m²)`};
+  return          {...r70, qty:q70, criterio:`70 mm elegido (desp. ${d70.toFixed(2)} m²) vs 50 mm (${d50.toFixed(2)} m²)`};
+}
+
+// ── UI ──
+let S = {largo:0, ancho:0, sup:0, tipo:null, medida:null};
+
+function parseMedidas(force) {
+  const raw  = document.getElementById('medInput').value.trim();
+  const nums = raw.match(/\d+(?:[.,]\d+)?/g);
+  const inp  = document.getElementById('medInput');
+  const err  = document.getElementById('err-med');
+  if (!nums || nums.length < 2) {
+    document.getElementById('area-pill').innerHTML = '— ingresá las medidas';
+    inp.classList.remove('err'); err.style.display='none';
+    lockFrom('s-tipo'); return;
+  }
+  const a = parseFloat(nums[0].replace(',','.')), b = parseFloat(nums[1].replace(',','.'));
+  if (isNaN(a)||isNaN(b)||a<=0||b<=0) {
+    if (force) { inp.classList.add('err'); err.style.display='block'; }
+    lockFrom('s-tipo'); return;
+  }
+  inp.classList.remove('err'); err.style.display='none';
+  const largo=Math.max(a,b), ancho=Math.min(a,b), sup=largo*ancho;
+  S.largo=largo; S.ancho=ancho; S.sup=sup;
+  document.getElementById('area-pill').innerHTML =
+    `Largo: <b>${largo} m</b> &nbsp;·&nbsp; Ancho: <b>${ancho} m</b> &nbsp;·&nbsp; Área: <b>${sup.toFixed(2)} m²</b>`;
+  unlock('s-tipo');
+}
+
+function unlock(id) {
+  document.getElementById(id).classList.remove('locked');
+  document.getElementById(id).classList.add('active');
+}
+function lockFrom(startId) {
+  ['s-tipo','s-medplaca','s-bajada']
+    .slice(['s-tipo','s-medplaca','s-bajada'].indexOf(startId))
+    .forEach(id => { document.getElementById(id).classList.add('locked'); document.getElementById(id).classList.remove('active'); });
+  document.getElementById('results').style.display='none';
+  S.tipo=null; S.medida=null;
+  document.querySelectorAll('input[name="tipo"],input[name="medplaca"]').forEach(r=>r.checked=false);
+}
+function onTipo() {
+  S.tipo = document.querySelector('input[name="tipo"]:checked')?.value||null;
+  if (S.tipo) { unlock('s-medplaca'); lockFrom2('s-bajada'); }
+}
+function lockFrom2(id) {
+  document.getElementById(id).classList.add('locked');
+  document.getElementById(id).classList.remove('active');
+  document.getElementById('results').style.display='none';
+  S.medida=null;
+  document.querySelectorAll('input[name="medplaca"]').forEach(r=>r.checked=false);
+}
+function onMedPlaca() {
+  S.medida = document.querySelector('input[name="medplaca"]:checked')?.value||null;
+  if (S.medida) unlock('s-bajada');
+  document.getElementById('results').style.display='none';
+}
+
+function calcular() {
+  if (!S.largo||!S.ancho) { document.getElementById('err-med').style.display='block'; return; }
+  const baj = parseFloat(document.getElementById('bajada').value)||0;
+  if (baj<=0) { document.getElementById('err-bajada').style.display='block'; return; }
+  document.getElementById('err-bajada').style.display='none';
+
+  const {largo,ancho,sup} = S;
+  const per    = calcPerimetral(largo, ancho);
+  const lar    = calcLarguero(largo, ancho, S.tipo);
+  const trav   = calcTravesanos(largo, ancho, S.tipo, S.medida);
+  const {tornillos,tarugos} = calcTornillosYTarugos(largo, ancho, per);
+  const placas  = calcPlacas(sup, S.tipo, S.medida);
+  const alambre = calcAlambre(largo, ancho, baj);
+
+  const rows = [
+    {cod:'656',  nom:'PERIMETRAL BARBIERI TX P 15/16" 20X22MM × 3.05 MTS',   qty:per,      unit:'u'},
+    {cod:'389',  nom:'LARGUERO BARBIERI TX LP 15/16" (24MM) 32MM × 3.66 MTS',qty:lar,      unit:'u'},
+  ];
+  if (trav['1276']) rows.push({cod:'1276',nom:'TRAVESAÑO BARBIERI TX × 0.61 MTS 15/16" (24MM) 26MM',qty:trav['1276'],unit:'u'});
+  if (trav['1277']) rows.push({cod:'1277',nom:'TRAVESAÑO BARBIERI TX × 1.22 MTS 15/16" (24MM) 26MM',qty:trav['1277'],unit:'u'});
+  rows.push(
+    {cod:'T8',       nom:'TORNILLO T8 FIX 8 × 1¾"',                                          qty:tornillos,   unit:'u'},
+    {cod:'1157',     nom:'TARUGO 6MM SIN TOPE',                                                qty:tarugos,     unit:'u'},
+    {cod:placas.cod, nom:placas.nom,                                                           qty:placas.qty,  unit:'u'},
+    {cod:'1410',     nom:`ALAMBRE GALVANIZADO N°18 × KG  (${alambre.puntos} pts · bajada ${baj} cm)`, qty:alambre.kg, unit:'kg'},
+  );
+
+  const tbody = document.getElementById('mat-table');
+  tbody.innerHTML='';
+  rows.forEach((r,i) => {
+    const tr = document.createElement('tr');
+    tr.style.animationDelay=(i*0.04)+'s';
+    tr.innerHTML=`<td><div class="mat-code">${r.cod}</div><div class="mat-name">${r.nom}</div></td>
+      <td><div class="mat-qty">${r.qty}</div><div class="mat-unit">${r.unit}</div></td>`;
+    tbody.appendChild(tr);
+  });
+
+  const tipLabel = S.tipo==='liviana'?'Liviana':'Común';
+  document.getElementById('res-meta').innerHTML =
+    `${tipLabel} · ${S.medida}<br>${largo} × ${ancho} m = ${sup.toFixed(2)} m²<br>Bajada: ${baj} cm`;
+
+  document.querySelectorAll('input[name="iso"]').forEach(r=>r.checked=false);
+  document.getElementById('iso-answer').style.display='none';
+  document.getElementById('iso-answer').innerHTML='';
+  document.getElementById('results').style.display='block';
+  setTimeout(()=>document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+
+function calcIso(agregar) {
+  const div = document.getElementById('iso-answer');
+  div.style.display='block';
+  if (!agregar) { div.innerHTML='<p class="iso-none-msg">Sin aislación. Podés cambiar la selección cuando quieras.</p>'; return; }
+  const r = calcAislacion(S.sup);
+  const prev = document.getElementById('mat-table').querySelector('.iso-row-result');
+  if (prev) prev.remove();
+  const tr = document.createElement('tr');
+  tr.className='iso-row-result';
+  tr.innerHTML=`<td><div class="mat-code">${r.cod}</div><div class="mat-name">${r.nom} (${r.m2} m²/rollo · ${r.esp})</div></td>
+    <td><div class="mat-qty">${r.qty}</div><div class="mat-unit">rollo${r.qty!==1?'s':''}</div></td>`;
+  document.getElementById('mat-table').appendChild(tr);
+  div.innerHTML=`<p style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:8px 0;line-height:1.7">
+    <b style="color:var(--success)">Criterio:</b> ${r.criterio}</p>`;
+}
+
+function resetAll() {
+  document.getElementById('medInput').value='';
+  document.getElementById('bajada').value='15';
+  document.getElementById('area-pill').innerHTML='— ingresá las medidas';
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+  lockFrom('s-tipo');
+  document.getElementById('results').style.display='none';
+  S={largo:0,ancho:0,sup:0,tipo:null,medida:null};
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
